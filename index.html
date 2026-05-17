@@ -1,109 +1,57 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pl">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-<title>Palcowy Dash — gra mobilna</title>
-<style>
-  :root{--bg1:#0f172a;--bg2:#111827;--card:#0b1220;--line:#22304a;--accent:#38bdf8;--accent2:#f97316;--text:#e5eefb;--muted:#9fb1cc;--good:#22c55e;--bad:#ef4444}
-  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-  html,body{margin:0;height:100%;background:radial-gradient(circle at top,#1e293b 0,#0f172a 48%,#020617 100%);font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:var(--text);overflow:hidden}
-  body{display:flex;align-items:center;justify-content:center}
-  .wrap{width:min(100vw,520px);height:min(100vh,920px);padding:12px;display:flex;flex-direction:column;gap:10px}
-  .top{display:flex;justify-content:space-between;align-items:center;gap:10px}
-  .pill{background:rgba(15,23,42,.72);border:1px solid rgba(148,163,184,.18);backdrop-filter:blur(10px);border-radius:999px;padding:10px 14px;font-weight:700;box-shadow:0 10px 30px rgba(0,0,0,.18)}
-  .pill span{color:var(--accent)}
-  .stage{position:relative;flex:1;min-height:0;border-radius:28px;overflow:hidden;background:linear-gradient(180deg,#0b1220 0%,#0f172a 100%);border:1px solid rgba(148,163,184,.12);box-shadow:0 20px 60px rgba(0,0,0,.35)}
-  canvas{display:block;width:100%;height:100%}
-  .overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:18px;text-align:center;background:linear-gradient(180deg,rgba(2,6,23,.15),rgba(2,6,23,.55));}
-  .card{max-width:360px;background:rgba(15,23,42,.78);border:1px solid rgba(148,163,184,.18);border-radius:24px;padding:22px 18px;box-shadow:0 18px 60px rgba(0,0,0,.38)}
-  h1{margin:0 0 8px;font-size:clamp(28px,6vw,40px)}
-  p{margin:8px 0;color:var(--muted);line-height:1.35}
-  .btn{margin-top:14px;border:0;border-radius:16px;padding:14px 18px;font-weight:800;font-size:16px;color:#08111f;background:linear-gradient(135deg,#67e8f9,#38bdf8);box-shadow:0 12px 28px rgba(56,189,248,.35);width:100%}
-  .btn:active{transform:translateY(1px)}
-  .hint{font-size:13px;color:#c8d4e7}
-  .controls{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-  .touch{user-select:none;touch-action:none;height:74px;border-radius:22px;border:1px solid rgba(148,163,184,.16);background:linear-gradient(180deg,rgba(30,41,59,.72),rgba(15,23,42,.88));color:#fff;font-size:18px;font-weight:800;box-shadow:inset 0 1px 0 rgba(255,255,255,.06)}
-  .touch:active{background:linear-gradient(180deg,rgba(56,189,248,.42),rgba(15,23,42,.92))}
-  .footer{font-size:12px;color:#91a4c2;text-align:center;padding-bottom:2px}
-</style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>Sosnowe Chwile – mobile</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="wrap">
-    <div class="top">
-      <div class="pill">Punkty: <span id="score">0</span></div>
-      <div class="pill">Rekord: <span id="best">0</span></div>
+  <header class="topbar">
+    <div class="container topbar-inner">
+      <div class="brand">Sosnowe Chwile</div>
+      <button class="menu-btn" aria-label="Menu"><span></span><span></span><span></span></button>
     </div>
-
-    <div class="stage">
-      <canvas id="game"></canvas>
-      <div class="overlay" id="overlay">
-        <div class="card">
-          <img src="assets/start.png" alt="Palcowy Dash start screen" style="width:100%;max-width:320px;height:auto;display:block;margin:0 auto 12px;border-radius:16px;">
-          <h1>Palcowy Dash</h1>
-          <p style="margin-top:-2px;color:#7dd3fc;font-weight:700;letter-spacing:.04em;">by Elvir Elvir</p>
-          <p>Przesuwaj palcem w lewo i prawo, żeby omijać przeszkody i zbierać gwiazdki.</p>
-          <p class="hint">Na telefonie: przeciągnij po planszy. Na komputerze: myszką lub strzałkami.</p>
-          <button class="btn" id="startBtn">Start</button>
-          <p id="shareLink" class="hint" style="display:none;word-break:break-all;margin-top:10px;"></p>
+  </header>
+  <main>
+    <section class="section hero">
+      <div class="container">
+        <div class="hero-copy">
+          <span class="eyebrow">eFaktura zaliczkowa 15–20%</span>
+          <h1>Krótki formularz przed eFakturą</h1>
+          <p>Czytelny układ dopasowany do telefonu.</p>
         </div>
       </div>
-    </div>
-
-    <div class="controls">
-      <button class="touch" id="leftBtn">⬅ Lewo</button>
-      <button class="touch" id="rightBtn">Prawo ➡</button>
-    </div>
-    <div class="footer">Szybka gra mobilna bez instalacji</div>
-  </div>
-
-<script>
-const canvas = document.getElementById('game');
-const ctx = canvas.getContext('2d');
-const scoreEl = document.getElementById('score');
-const bestEl = document.getElementById('best');
-const overlay = document.getElementById('overlay');
-const startBtn = document.getElementById('startBtn');
-const leftBtn = document.getElementById('leftBtn');
-const rightBtn = document.getElementById('rightBtn');
-let W,H,dpr,running=false,gameOver=false,score=0,best=Number(localStorage.getItem('palcowyBest')||0),speed=3.2,spawnT=0,starsT=0,last=0,shake=0;
-const lanes=3;
-const player={lane:1,x:0,y:0,w:0,h:0};
-let obstacles=[],stars=[];
-bestEl.textContent=best;
-function resize(){dpr=Math.max(1,Math.min(2,window.devicePixelRatio||1));W=canvas.clientWidth;H=canvas.clientHeight;canvas.width=W*dpr;canvas.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);player.w=Math.min(70,W*0.16);player.h=player.w*0.9;player.y=H-player.h-24;updatePlayerX();}
-function updatePlayerX(){const gap=W*0.18;player.x=W/2 + (player.lane-1)*gap - player.w/2;}
-function reset(){score=0;speed=3.2;spawnT=0;starsT=0;shake=0;obstacles=[];stars=[];player.lane=1;updatePlayerX();scoreEl.textContent='0';gameOver=false;running=true;overlay.style.display='none'; var sl=document.getElementById('shareLink'); if(sl){sl.style.display='none'; sl.innerHTML='';}last=performance.now();requestAnimationFrame(loop);}
-function laneX(l){return W/2 + (l-1)*(W*0.18);}
-function spawnObstacle(){const lane=Math.floor(Math.random()*lanes);const size=Math.max(34,W*0.08);obstacles.push({lane,x:laneX(lane)-size/2,y:-size-20,s:size,kind:Math.random()<0.22?'big':'small'});}
-function spawnStar(){const lane=Math.floor(Math.random()*lanes);const size=Math.max(18,W*0.045);stars.push({lane,x:laneX(lane)-size/2,y:-size-20,s:size});}
-function moveLane(dir){if(!running||gameOver) return;player.lane=Math.max(0,Math.min(2,player.lane+dir));updatePlayerX();}
-function hit(a,b){return a.x<a.x+a.w&&a.x<b.x+b.w&&a.x+a.w>b.x&&a.y<b.y+b.h&&a.y+a.h>b.y;}
-function rectCollision(px,py,pw,ph,ox,oy,ow,oh){return px<ox+ow&&px+pw>ox&&py<oy+oh&&py+ph>oy;}
-function draw(){ctx.clearRect(0,0,W,H);const grad=ctx.createLinearGradient(0,0,0,H);grad.addColorStop(0,'#0f172a');grad.addColorStop(1,'#020617');ctx.fillStyle=grad;ctx.fillRect(0,0,W,H);
-  ctx.save();ctx.translate(shake? (Math.random()*shake-shake/2):0, shake? (Math.random()*shake-shake/2):0);
-  ctx.strokeStyle='rgba(148,163,184,.14)';ctx.lineWidth=2;for(let i=1;i<lanes;i++){const x=W*i/lanes;ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
-  ctx.fillStyle='rgba(56,189,248,.08)';ctx.fillRect(0,H*0.12,W,H*0.16);
-  obstacles.forEach(o=>{const x=laneX(o.lane)-o.s/2;ctx.fillStyle=o.kind==='big'?'#ef4444':'#f97316';ctx.beginPath();ctx.roundRect(x,o.y,o.s,o.s,12);ctx.fill();ctx.fillStyle='rgba(255,255,255,.15)';ctx.fillRect(x+o.s*0.15,o.y+o.s*0.15,o.s*0.25,o.s*0.2);});
-  stars.forEach(s=>{const x=laneX(s.lane);ctx.fillStyle='#facc15';ctx.beginPath();for(let i=0;i<5;i++){const a=(Math.PI*2/5)*i-Math.PI/2;const r=i%2===0?s.s*0.55:s.s*0.22;ctx.lineTo(x+Math.cos(a)*r,s.y+s.s*0.5+Math.sin(a)*r);}ctx.closePath();ctx.fill();});
-  const px=player.x,py=player.y,pw=player.w,ph=player.h;ctx.fillStyle='#38bdf8';ctx.beginPath();ctx.roundRect(px,py,pw,ph,18);ctx.fill();ctx.fillStyle='#e0f2fe';ctx.beginPath();ctx.roundRect(px+pw*0.2,py+ph*0.18,pw*0.6,ph*0.28,10);ctx.fill();ctx.fillStyle='#0ea5e9';ctx.beginPath();ctx.arc(px+pw*0.26,py+ph*0.8,Math.max(3,pw*0.07),0,Math.PI*2);ctx.arc(px+pw*0.74,py+ph*0.8,Math.max(3,pw*0.07),0,Math.PI*2);ctx.fill();
-  ctx.restore();}
-function update(dt){if(!running||gameOver)return;speed+=dt*0.0004;spawnT+=dt;starsT+=dt;shake=Math.max(0,shake-dt*0.02);if(spawnT>Math.max(420,900-speed*90)){spawnT=0;spawnObstacle();}
-  if(starsT>700){starsT=0;if(Math.random()<0.75) spawnStar();}
-  obstacles.forEach(o=>o.y+=speed*dt*0.08);stars.forEach(s=>s.y+=speed*dt*0.075);
-  obstacles=obstacles.filter(o=>o.y<H+80);stars=stars.filter(s=>s.y<H+80);
-  const px=player.x,py=player.y,pw=player.w,ph=player.h;
-  for(const o of obstacles){const x=laneX(o.lane)-o.s/2;if(rectCollision(px,py,pw,ph,x,o.y,o.s,o.s)){gameOver=true;running=false;overlay.style.display='flex';overlay.querySelector('h1').textContent='Koniec gry';overlay.querySelector('p').textContent='Spróbuj jeszcze raz i pobij rekord.';startBtn.textContent='Zagraj ponownie';var sl=document.getElementById('shareLink');sl.style.display='block';sl.innerHTML='Link do gry:<br><a href="https://twoja-domena.pl/palcowy-dash.html" style="color:#67e8f9">https://twoja-domena.pl/palcowy-dash.html</a>'; best=Math.max(best,score);localStorage.setItem('palcowyBest',best);bestEl.textContent=best;shake=8;return;}}
-  for(let i=stars.length-1;i>=0;i--){const s=stars[i],x=laneX(s.lane)-s.s/2;if(rectCollision(px,py,pw,ph,x,s.y,s.s,s.s)){score+=10;scoreEl.textContent=score;stars.splice(i,1);}}
-  score += dt*0.01;scoreEl.textContent=Math.floor(score);
-}
-function loop(t){const dt=Math.min(32,t-last);last=t;update(dt);draw();if(running) requestAnimationFrame(loop);}
-canvas.addEventListener('pointerdown',e=>{if(!running||gameOver)return;startX=e.clientX;canvas.setPointerCapture?.(e.pointerId);});
-canvas.addEventListener('pointermove',e=>{if(startX==null||gameOver||!running)return;const dx=e.clientX-startX;if(Math.abs(dx)>28){moveLane(dx>0?1:-1);startX=e.clientX;}});
-canvas.addEventListener('pointerup',()=>{startX=null;});
-window.addEventListener('keydown',e=>{if(e.key==='ArrowLeft')moveLane(-1);if(e.key==='ArrowRight')moveLane(1);if((e.key==='Enter'||e.key===' ')&&!running)reset();});
-leftBtn.addEventListener('click',()=>moveLane(-1)); rightBtn.addEventListener('click',()=>moveLane(1));
-startBtn.addEventListener('click',reset); window.addEventListener('resize',resize); resize(); draw();
-</script>
+    </section>
+    <section class="section invoice-section">
+      <div class="container">
+        <div class="section-head">
+          <h2>eFaktura zaliczkowa</h2>
+          <p>Podgląd dokumentu.</p>
+        </div>
+        <div class="invoice-card">
+          <div class="invoice-header">
+            <div class="invoice-logo-full"><img src="sosnowe_logo.png" alt="Sosnowe Chwile logo"></div>
+            <div class="invoice-meta">
+              <p><strong>Dokument:</strong> eFaktura zaliczkowa</p>
+              <p><strong>Nr:</strong> FSZ/2026/05/001</p>
+              <p><strong>Data:</strong> 15.05.2026</p>
+            </div>
+          </div>
+          <div class="invoice-summary">
+            <div>
+              <div class="invoice-box"><h4>Wartość brutto</h4><p>1099 zł / paleta</p></div>
+              <div class="invoice-box" style="margin-top:12px"><h4>VAT</h4><p>0%</p></div>
+            </div>
+            <div class="calc-box">
+              <p>Zaliczka</p>
+              <strong>15–20%</strong>
+              <small>wartości całego zamówienia</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
 </body>
 </html>
